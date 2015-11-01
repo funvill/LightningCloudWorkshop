@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="LightningCloudWorkshop.ino" />
+    <None Include="thundercloud.ino" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.LightningCloudWorkshop.vsarduino.h">
+    <ClInclude Include="__vm\.thundercloud.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -34,6 +34,23 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 #define CLOUD_STATE_LIGHTING				3 
 #define CLOUD_STATE_CRACK					4
 
+
+
+uint32_t hsb(uint16_t index, uint8_t sat, uint8_t bright) {
+	uint8_t temp[5], n = (index >> 8) % 3;
+	// %3 not needed if input is constrained, but may be useful for color cycling and/or if modulo constant is fast
+	uint8_t x = ((((index & 255) * sat) >> 8) * bright) >> 8;
+	// shifts may be added for added speed and precision at the end if fast 32 bit calculation is available
+	uint8_t s = ((256 - sat) * bright) >> 8;
+	temp[0] = temp[3] = s;
+	temp[1] = temp[4] = x + s;
+	temp[2] = bright - x;
+
+	return strip.Color(temp[n + 2], temp[n + 1], temp[n + 0]);
+}
+
+
+
 /**
  * This class MUST never block. No delays of any type! Because of this we are going to use a stat machine. 
  * This class MUST be thread save. No static or global variables. Don't be a bad programer! 
@@ -341,11 +358,27 @@ void setup() {
 	strip.begin();
 	strip.show(); // Initialize all pixels to 'off'
 
+	strip.setBrightness(256/4);
+
 	Serial.begin(115200);
 	Serial.println("Lightning test");
 }
 
 void loop() {
+	/*
+	unsigned short hue = random(0, 360);
+	for (int bright = 0; bright < 255; bright +=5 ) {
+		for (int pixel = 0; pixel < strip.numPixels(); pixel++) {
+			strip.setPixelColor(pixel, hsb(bright, 255, 255));
+		}
+		strip.show();
+		delay(10); // Save some batteries and sleep for a bit. 
+	}
+
+	return;
+	*/
+
+	
 
 	for (int offset = 0; offset < FLUFFY_CLOUD_MAX; offset++) {
 		fluffyCloud[offset].loop();
