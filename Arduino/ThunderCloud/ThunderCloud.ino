@@ -48,8 +48,12 @@
 #define VERSION_MINOR "0"
 #define VERSION_PATH "1"
 
+// Globals 
+// =====================================
 // Define the array of leds
 CRGB leds[SETTING_NUM_LEDS];
+ESP8266WebServer webServer(80);
+
 
 bool randomColor;
 
@@ -65,7 +69,16 @@ CHSV getBright()
 
 void UnconfiguredWiFi(WiFiManager* wifi)
 {
+	// WiFi is not configured. 
+	// Setting the cloud into a known default state
+
+	Serial.println("FYI: WiFi is not configured.");
     colour_fade();
+	
+}
+
+void handleRoot() {
+	webServer.send(200, "text/html", "hello world");
 }
 
 void setup()
@@ -78,21 +91,25 @@ void setup()
     Serial.println("FYI: Thunder Cloud version: " + String(VERSION_MAJOR) + "." + String(VERSION_MINOR) + "." + String(VERSION_PATH));
     Serial.println("FYI: More info: https://github.com/funvill/LightningCloudWorkshop");
     Serial.println();
-
     
     // Define the LEDs, how many, what type and what order. 
     FastLED.addLeds<WS2812B, SETTING_DATA_PIN, GRB>(leds, SETTING_NUM_LEDS);
 
     // Note, Connecting to the Wifi Manager is a blocking function.
-    WiFiManager wifiManager;
+    WiFiManager wifiManager;	
+    // wifiManager.resetSettings(); // Debug: Reset saved settings
     wifiManager.setAPCallback(UnconfiguredWiFi);
-    wifiManager.autoConnect("ThunderCloud");
+	String ssid = "ThunderCloud-" + String(ESP.getChipId());
+    wifiManager.autoConnect(ssid.c_str());
 
     // Connected to WiFi
     Serial.println("FYI: Successfully connected to wifi");
     Serial.print("FYI: Local IP address: ");
     Serial.println(WiFi.localIP());
 
+	// Set up web server routes 
+	webServer.on("/", handleRoot);
+	webServer.begin();
 
 	randomColor = true;
 }
@@ -101,6 +118,9 @@ void setup()
 #define TIME_COLOR_MODE_CHANGE (1000 * 1 * 5)
 void loop()
 {
+	webServer.handleClient();
+	yield(); 
+
     constant_lightning();
     return;
 
@@ -244,20 +264,20 @@ void constant_lightning()
         case 1:
             thunderburst();
             delay(random(10, 500));
-            Serial.println("Thunderburst");
+            Serial.println("FYI: Thunderburst");
             break;
 
         case 2:
         case 3:
         case 4:
             rolling();
-            Serial.println("Rolling");
+            Serial.println("FYI: Rolling");
             break;
 
         case 5:
             crack();
             delay(random(50, 250));
-            Serial.println("Crack");
+            Serial.println("FYI: Crack");
             break;
     }
 }
